@@ -2,12 +2,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
+import gui
 
-field_density = 15
-vector_size = 0.02
-field_size = 0.2
-streamplot_Z = 0
+# field_density = 5
+# vector_size = 0.02
+# field_size = 0.2
+# streamplot_Z = 0
 u0 = 4*np.pi*(10**(-7))
+
+class Field_data:
+    def __init__(self, x, y, z, X, Y, Z, Bx_c, By_c, Bz_c, m_arr):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.X = X
+        self.Y = Y
+        self.Z = Z
+        self.Bx_c = Bx_c
+        self.By_c = By_c
+        self.Bz_c = Bz_c
+        self.m_arr = m_arr
 
 def stworz_obsluge_sondy(ax, fig, tablica_x, tablica_y, dane_b):
     sonda_tekst = None
@@ -68,7 +82,7 @@ def generate_dipoles(center, ang, n, rad, m_mod):
         
     return m_arr
 
-def main():
+def solve(field_density, vector_size, field_size, streamplot_Z):
     # m_arr  = [[0,0,0,0,0,1]]
     m_arr = generate_dipoles([0,0,0], (np.pi/12), [1,0,0], 0.1, 4)
 
@@ -107,41 +121,38 @@ def main():
         By_c += By
         Bz_c += Bz
 
-    B_mod = np.sqrt(np.square(Bx_c)+np.square(By_c)+np.square(Bz_c))
+    data_pack = Field_data(x,y,z,X,Y,Z,Bx_c,By_c,Bz_c, m_arr)
+    return data_pack
+    # B_mod = np.sqrt(np.square(Bx_c)+np.square(By_c)+np.square(Bz_c))
 
-    B_flat = B_mod.flatten()
-    norm = mcolors.Normalize(vmin=B_flat.min(), vmax=B_flat.max()/10)
-    cmap = cm.RdPu
-    vector_colors = cmap(norm(B_flat))
+    # B_flat = B_mod.flatten()
+    # norm = mcolors.Normalize(vmin=B_flat.min(), vmax=B_flat.max()/10)
+    # cmap = cm.RdPu
+    # vector_colors = cmap(norm(B_flat))
 
-    fig = plt.figure()
-    ax1 = fig.add_subplot(121, projection='3d')
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(121, projection='3d')
 
-    ax1.quiver3D(X, Y, Z, Bx_c, By_c, Bz_c, length=vector_size, normalize=True, colors=vector_colors)
-    for i in range(len(m_arr)):
-        ax1.quiver3D(m_arr[i][0], m_arr[i][1], m_arr[i][2], m_arr[i][3], m_arr[i][4], m_arr[i][5], length=vector_size*2, normalize=True, color='red')
+    # ax1.quiver3D(X, Y, Z, Bx_c, By_c, Bz_c, length=vector_size, normalize=True, colors=vector_colors)
+    # for i in range(len(m_arr)):
+    #     ax1.quiver3D(m_arr[i][0], m_arr[i][1], m_arr[i][2], m_arr[i][3], m_arr[i][4], m_arr[i][5], length=vector_size*2, normalize=True, color='red')
 
-    plt.tight_layout(pad=0)
-    # ax.set_proj_type('ortho')
-    # ax.view_init(elev=90, azim=-90)
+    # plt.tight_layout(pad=0)
+    # z_index = (np.abs(z - streamplot_Z)).argmin() 
 
-    z_index = (np.abs(z - streamplot_Z)).argmin() 
+    # Bx_2d = Bx_c[:, :, z_index]
+    # By_2d = By_c[:, :, z_index]
+    # B_mod_2d = B_mod[:, :, z_index]
 
-    Bx_2d = Bx_c[:, :, z_index]
-    By_2d = By_c[:, :, z_index]
-    B_mod_2d = B_mod[:, :, z_index]
-
-    ax2 = fig.add_subplot(1,2,2)
-    ax2.set_aspect('equal')
-    strm = ax2.streamplot(x, y, Bx_2d, By_2d, color=np.log10(B_mod_2d), cmap=cm.RdPu, linewidth=1.5, density=1.5)
+    # ax2 = fig.add_subplot(1,2,2)
+    # ax2.set_aspect('equal')
+    # strm = ax2.streamplot(x, y, Bx_2d, By_2d, color=np.log10(B_mod_2d), cmap=cm.RdPu, linewidth=1.5, density=1.5)
     
-    for m in m_arr:
-        ax2.plot(m[0], m[1], 'ro', markersize=5)
+    # for m in m_arr:
+    #     ax2.plot(m[0], m[1], 'ro', markersize=5)
 
-    obsluga = stworz_obsluge_sondy(ax2, fig, x, y, B_mod_2d)
-    fig.canvas.mpl_connect('button_press_event', obsluga)
+    # obsluga = stworz_obsluge_sondy(ax2, fig, x, y, B_mod_2d)
+    # fig.canvas.mpl_connect('button_press_event', obsluga)
 
-    plt.tight_layout()
-    plt.show()
-
-if __name__ == "__main__": main()
+    # plt.tight_layout()
+    # plt.show()
