@@ -4,10 +4,6 @@ import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 import gui
 
-# field_density = 5
-# vector_size = 0.02
-# field_size = 0.2
-# streamplot_Z = 0
 u0 = 4*np.pi*(10**(-7))
 
 class Field_data:
@@ -23,38 +19,38 @@ class Field_data:
         self.Bz_c = Bz_c
         self.m_arr = m_arr
 
-def stworz_obsluge_sondy(ax, fig, tablica_x, tablica_y, dane_b):
-    sonda_tekst = None
-    sonda_punkt = None
+# def stworz_obsluge_sondy(ax, fig, tablica_x, tablica_y, dane_b):
+#     sonda_tekst = None
+#     sonda_punkt = None
 
-    def onclick(event):
-        nonlocal sonda_tekst, sonda_punkt
+#     def onclick(event):
+#         nonlocal sonda_tekst, sonda_punkt
         
-        if event.inaxes != ax: 
-            return 
+#         if event.inaxes != ax: 
+#             return 
             
-        cx, cy = event.xdata, event.ydata
-        if cx is None or cy is None: 
-            return
+#         cx, cy = event.xdata, event.ydata
+#         if cx is None or cy is None: 
+#             return
 
-        ix = (np.abs(tablica_x - cx)).argmin()
-        iy = (np.abs(tablica_y - cy)).argmin()
-        b_wartosc = dane_b[iy, ix]
+#         ix = (np.abs(tablica_x - cx)).argmin()
+#         iy = (np.abs(tablica_y - cy)).argmin()
+#         b_wartosc = dane_b[iy, ix]
 
-        if sonda_tekst: sonda_tekst.remove()
-        if sonda_punkt: sonda_punkt.remove()
+#         if sonda_tekst: sonda_tekst.remove()
+#         if sonda_punkt: sonda_punkt.remove()
 
-        sonda_punkt, = ax.plot(cx, cy, 'bo', markersize=6)
+#         sonda_punkt, = ax.plot(cx, cy, 'bo', markersize=6)
         
-        sonda_tekst = ax.annotate(
-            f'|B|: {b_wartosc:.2e} T\n(x: {cx:.2f}, y: {cy:.2f})', 
-            (cx, cy), xytext=(10, 10), textcoords='offset points',
-            bbox=dict(boxstyle="round,pad=0.5", fc="white", ec="black", alpha=0.9),
-            arrowprops=dict(arrowstyle="->", connectionstyle="arc3")
-        )
-        fig.canvas.draw()
+#         sonda_tekst = ax.annotate(
+#             f'|B|: {b_wartosc:.2e} T\n(x: {cx:.2f}, y: {cy:.2f})', 
+#             (cx, cy), xytext=(10, 10), textcoords='offset points',
+#             bbox=dict(boxstyle="round,pad=0.5", fc="white", ec="black", alpha=0.9),
+#             arrowprops=dict(arrowstyle="->", connectionstyle="arc3")
+#         )
+#         fig.canvas.draw()
 
-    return onclick
+#     return onclick
 
 def generate_dipoles(center, ang, n, rad, m_mod):
     
@@ -82,7 +78,7 @@ def generate_dipoles(center, ang, n, rad, m_mod):
         
     return m_arr
 
-def solve(field_density, vector_size, field_size, streamplot_Z):
+def solve(m_arr, field_density, vector_size, field_size, streamplot_Z):
     # m_arr  = [[0,0,0,0,0,1]]
     m_arr = generate_dipoles([0,0,0], (np.pi/12), [1,0,0], 0.1, 4)
 
