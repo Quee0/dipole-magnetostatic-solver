@@ -80,7 +80,7 @@ def generate_dipoles(center, ang, n, rad, m_mod):
 
 def solve(m_arr, field_density, vector_size, field_size, streamplot_Z):
     # m_arr  = [[0,0,0,0,0,1]]
-    m_arr = generate_dipoles([0,0,0], (np.pi/12), [1,0,0], 0.1, 4)
+    # m_arr = generate_dipoles([0,0,0], (np.pi/12), [1,0,0], 0.1, 4)
 
     x = np.linspace(-field_size,field_size,field_density)
     y = np.linspace(-field_size,field_size,field_density)
