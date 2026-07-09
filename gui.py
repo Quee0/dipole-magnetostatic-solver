@@ -6,6 +6,7 @@ import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 import solver
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 gui_field_density = 5
 gui_vector_size = 0.02
@@ -137,20 +138,13 @@ class App(customtkinter.CTk):
         )
         self.field_streamplot_Z_slider.pack(fill="x", padx=standard_padx, pady=standard_pady)
 
-        self.u_entry = Label_with_entry(
-            self.sidebar_frame,
-            text_ = "u [H/m]",
-            def_val = 1,
-        )
-        self.u_entry.pack(pady=standard_pady, padx=standard_padx, fill="x")
-
         #Dipole options
         self.category_dipoles_label = customtkinter.CTkLabel(self.sidebar_frame, text="Dipoles", font=customtkinter.CTkFont(weight="bold"), fg_color="#495057", corner_radius=20,)
         self.category_dipoles_label.pack(pady=standard_pady)
 
         self.dipole_menu_button = customtkinter.CTkSegmentedButton(
             self.sidebar_frame, 
-            values=["Magnetized Volume", "Independent Dipoles"],
+            values=["Magnetized Volume", "Independent Dipole"],
             command=self.change_dipole_mode
         )
 
@@ -162,6 +156,7 @@ class App(customtkinter.CTk):
 
         # VOLUMETRIC
         self.frame_magnets = customtkinter.CTkFrame(self.dipol_menu_frame, fg_color="transparent")
+        self.frame_magnets.pack(fill="both", expand=True)
         
         self.polar_cord = customtkinter.CTkCheckBox(self.frame_magnets, text="Use polar coordinate system")
         self.polar_cord.pack(padx=standard_padx, pady=standard_pady, fill='x')
@@ -229,17 +224,59 @@ class App(customtkinter.CTk):
 
         #INDEPENDENT DIPOLE
         self.frame_dipol = customtkinter.CTkFrame(self.dipol_menu_frame, fg_color="transparent")
-        customtkinter.CTkLabel(self.frame_dipol, text="Param", font=("Arial", 16, "bold")).pack(pady=standard_pady)
 
-        customtkinter.CTkButton(self.frame_dipol, text="save Dipole").pack(pady=standard_pady)
-        self.frame_magnets.pack(fill="both", expand=True)
+        self.dip_mag_moment = Label_with_entry(
+            self.frame_dipol,
+            text_ = "Dipole magnetic moment [A*m^2]",
+            def_val = 1,
+        )
+        self.dip_mag_moment.pack(pady=standard_pady, fill="x")
+
+        self.dip_axis_combobox = customtkinter.CTkComboBox(
+            self.frame_dipol,
+            values=["x", "y", "z"],
+        )
+        self.dip_axis_combobox.pack(pady=standard_pady)
+
+        self.dip_polar_setup = customtkinter.CTkCheckBox(self.frame_dipol, text="Use polar coordinate preset")
+        self.dip_polar_setup.pack(padx=standard_padx, pady=standard_pady, fill='x')
+
+        self.category_flux_label = customtkinter.CTkLabel(self.sidebar_frame, text="Compute flux", font=customtkinter.CTkFont(weight="bold"), fg_color="#495057", corner_radius=20,)
+        self.category_flux_label.pack(pady=standard_pady)
+
+        self.flux_result_label = customtkinter.CTkLabel(self.sidebar_frame, text="Flux: --- Wb", text_color="cyan", font=customtkinter.CTkFont(weight="bold", size=14))
+        self.flux_result_label.pack(pady=standard_pady)
+
+        self.flux_x = Label_with_entry(
+            self.sidebar_frame,
+            text_ = "Flux x size [m]",
+            def_val = 0.1,
+        )
+        self.flux_x.pack(pady=standard_pady, fill="x")
+        
+        self.flux_z = Label_with_entry(
+            self.sidebar_frame,
+            text_ = "Flux z size [m]",
+            def_val = 0.1,
+        )
+        self.flux_z.pack(pady=standard_pady, fill="x")
+
+        self.flux_y_pos = Label_with_entry(
+            self.sidebar_frame,
+            text_ = "Flux y pos [m]",
+            def_val = 0,
+        )
+        self.flux_y_pos.pack(pady=standard_pady, fill="x")
+
+        self.flux_resolution = Label_with_entry(
+            self.sidebar_frame,
+            text_ = "Flux resolution [m]",
+            def_val = 5,
+        )
+        self.flux_resolution.pack(pady=standard_pady, fill="x")
 
         self.category_visuals_label = customtkinter.CTkLabel(self.sidebar_frame, text="Visuals", font=customtkinter.CTkFont(weight="bold"), fg_color="#495057", corner_radius=20,)
         self.category_visuals_label.pack(pady=standard_pady)
-
-        self.darkmode_enabled = customtkinter.StringVar(value="off")
-        self.darkmode_checkbox = customtkinter.CTkCheckBox(self.sidebar_frame, text="Darkmode", variable=self.darkmode_enabled, onvalue="on", offvalue="off")
-        self.darkmode_checkbox.pack(pady=standard_pady)
 
         self.vector_size_slider = Slider_with_entry(
             self.sidebar_frame, 
@@ -269,6 +306,48 @@ class App(customtkinter.CTk):
         toolbar.update()
         toolbar.grid(row=1, column=0, sticky="we")
 
+        self.sonda_text = None
+        self.sonda_point = None
+        self.sonda_cid = None
+        self.sonda_ax = None
+        self.sonda_data_x = None
+        self.sonda_data_y = None
+        self.sonda_data_b = None
+
+    def sonda_function(self, event):
+        if event.inaxes != self.sonda_ax or self.sonda_data_b is None: 
+            return 
+            
+        cx, cy = event.xdata, event.ydata
+        if cx is None or cy is None: 
+            return
+
+        ix = (np.abs(self.sonda_data_x - cx)).argmin()
+        iy = (np.abs(self.sonda_data_y - cy)).argmin()
+        b_value = self.sonda_data_b[iy, ix]
+
+        if self.sonda_text: 
+            try: self.sonda_text.remove()
+            except ValueError: pass
+        if self.sonda_point: 
+            try: self.sonda_point[0].remove()
+            except ValueError: pass
+
+        self.sonda_point = self.sonda_ax.plot(cx, cy, 'bo', markersize=6)
+        
+        text_color = "#000000"
+        fg_color = "#ffffff"
+        self.sonda_text = self.sonda_ax.annotate(
+            f'|B|: {b_value:.2e} T\n(x: {cx:.2f}, y: {cy:.2f})', 
+            (cx, cy), xytext=(10, 10), textcoords='offset points',
+            bbox=dict(boxstyle="round,pad=0.5", fc=fg_color, alpha=0.9),
+            color=text_color,
+            arrowprops=dict(arrowstyle="->", connectionstyle="arc3", color=text_color)
+        )
+
+        self.data
+        self.canvas.draw()
+
     def change_dipole_mode(self, chosen_mode):
             self.frame_magnets.pack_forget()
             self.frame_dipol.pack_forget()
@@ -276,12 +355,12 @@ class App(customtkinter.CTk):
             if chosen_mode == "Magnetized Volume":
                 self.frame_magnets.pack(fill="both", expand=True)
                 
-            elif chosen_mode == "Independent Dipoles":
+            elif chosen_mode == "Independent Dipole":
                 self.frame_dipol.pack(fill="both", expand=True)
 
     def generate_m_volumetric(self, lx, ly, lz, n, p_axis):
         
-        Br = self.remanence_entry.get() #Remanence
+        Br = float(self.remanence_entry.get()) #Remanence
         M = Br/u0 #Magnetization
         dV = (lx*ly*lz)/(pow(n,3))
 
@@ -339,29 +418,93 @@ class App(customtkinter.CTk):
 
         return m_arr
 
+    def compute_flux(self):
+
+        if not hasattr(self, 'data') or self.data is None:
+            return 0.0
+
+        # FLUX = SS B*dS
+        lx = float(self.flux_x.get())
+        lz = float(self.flux_z.get())
+        y_pos = float(self.flux_y_pos.get())
+        n = int(self.flux_resolution.get())
+        if n < 2: n = 2
+
+        flux_x_arr = np.linspace(-lx/2, lx/2, n)
+        flux_z_arr = np.linspace(-lz/2, lz/2, n)
+
+        dx = lx / (n - 1)
+        dz = lz / (n - 1)
+        dS = dx * dz
+
+        iy = (np.abs(self.data.y - y_pos)).argmin()
+        ix_indices = np.abs(self.data.x[:, None] - flux_x_arr).argmin(axis=0)
+        iz_indices = np.abs(self.data.z[:, None] - flux_z_arr).argmin(axis=0)
+
+        IX, IZ = np.meshgrid(ix_indices, iz_indices)
+        By_mapped = self.data.By_c[iy, IX, IZ]
+        sum_of_flux = np.sum(By_mapped) * dS
+
+        if hasattr(self, 'flux_result_label'):
+            self.flux_result_label.configure(text=f"Flux: {sum_of_flux:.4e} Wb")
+        else:
+            print(f"{sum_of_flux:.4e} Wb")
+        
+        return sum_of_flux
+
+
     def generate_plots(self):
         gui_field_size = self.field_size_slider.get()
         gui_field_density = int(self.field_density_slider.get())
         gui_vector_size = self.vector_size_slider.get()
         gui_streamplot_Z = self.field_streamplot_Z_slider.get()
 
-        # new_m_arr = solver.generate_dipoles([0,0,0], (np.pi/12), [1,0,0], 0.1, 4)
-        new_m_arr = self.generate_m_volumetric(float(self.size_x.get()), float(self.size_y.get()), float(self.size_z.get()), int(self.vol_resolution.get()), self.mag_axis_combobox.get())
+        if self.dipole_menu_button.get() == "Magnetized Volume":
+            new_m_arr = self.generate_m_volumetric(float(self.size_x.get()), float(self.size_y.get()), float(self.size_z.get()), int(self.vol_resolution.get()), self.mag_axis_combobox.get()) 
+        else:
+            if int(self.dip_polar_setup.get()): new_m_arr = solver.generate_dipoles([0,0,0], (np.pi/12), [1,0,0], 0.1, 4)
+            else: 
+                dir = self.dip_axis_combobox.get()
+                moment = float(self.dip_mag_moment.get())
+                if dir == "x": new_m_arr = [[0,0,0,moment,0,0]]
+                if dir == "y": new_m_arr = [[0,0,0,0,moment,0]]
+                if dir == "z": new_m_arr = [[0,0,0,0,0,moment]]
 
-        data = solver.solve(new_m_arr, gui_field_density, gui_vector_size, gui_field_size, gui_streamplot_Z)
-        
+        self.data = solver.solve(new_m_arr, gui_field_density, gui_vector_size, gui_field_size, gui_streamplot_Z)
+        data = self.data
+
         B_mod = np.sqrt(np.square(data.Bx_c)+np.square(data.By_c)+np.square(data.Bz_c))
         B_flat = B_mod.flatten()
         norm = mcolors.Normalize(vmin=B_flat.min(), vmax=B_flat.max()/10)
         cmap = cm.RdPu
-        vector_colors = cmap(norm(B_flat))
+        try: vector_colors = cmap(norm(B_flat))
+        except: vector_colors = cmap(norm(B_flat/10))
 
         self.fig.clf()
+
+        self.sonda_text = None
+        self.sonda_point = None
         ax1 = self.fig.add_subplot(121, projection='3d')
 
         ax1.quiver3D(data.X, data.Y, data.Z, data.Bx_c, data.By_c, data.Bz_c, length=gui_vector_size, normalize=True, colors=vector_colors)
         for i in range(len(data.m_arr)):
             ax1.quiver3D(data.m_arr[i][0], data.m_arr[i][1], data.m_arr[i][2], data.m_arr[i][3], data.m_arr[i][4], data.m_arr[i][5], length=gui_vector_size*2, normalize=True, color='red')
+
+        z_level = gui_streamplot_Z
+        size_x = float(self.flux_x.get())
+        size_z = float(self.flux_z.get())
+        poz_y = float(self.flux_y_pos.get())
+        pos_3d = [
+            [-size_x, poz_y, -size_z],
+            [ size_x, poz_y, -size_z],
+            [ size_x,  poz_y, size_z],
+            [-size_x,  poz_y, size_z] 
+        ]
+
+        surf_3d = Poly3DCollection([pos_3d])
+        surf_3d.set_facecolor((0.0, 1.0, 1.0, 0.2))
+        surf_3d.set_edgecolor('black')
+        ax1.add_collection3d(surf_3d)
 
         plt.tight_layout(pad=0)
         z_index = (np.abs(data.z - gui_streamplot_Z)).argmin() 
@@ -376,15 +519,17 @@ class App(customtkinter.CTk):
         for m in data.m_arr:
             ax2.plot(m[0], m[1], 'ro', markersize=5)
 
-        plt.tight_layout()
-        
-        if self.darkmode_enabled.get() == "on":
-            self.figures_frame.configure(fg_color="#000000")
-            plt.style.use('dark_background')
-        else: 
-            self.figures_frame.configure(fg_color="#ffffff")
-            plt.style.use('default')
+        self.sonda_ax = ax2
+        self.sonda_data_x = np.unique(data.x) 
+        self.sonda_data_y = np.unique(data.y)
+        self.sonda_data_b = B_mod_2d
+        if self.sonda_cid:
+            self.canvas.mpl_disconnect(self.sonda_cid)
+        self.sonda_cid = self.canvas.mpl_connect('button_press_event', self.sonda_function)
 
+        self.compute_flux()
+
+        plt.tight_layout()
         self.canvas.draw()
 
     def update_button_callback(self):

@@ -2,7 +2,6 @@ import solver
 import gui
 
 def main():
-    # solver.solve()
     app = gui.App()
     app.mainloop()
 

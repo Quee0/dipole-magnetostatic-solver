@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
-import gui
 
 u0 = 4*np.pi*(10**(-7))
 
@@ -18,39 +17,6 @@ class Field_data:
         self.By_c = By_c
         self.Bz_c = Bz_c
         self.m_arr = m_arr
-
-# def stworz_obsluge_sondy(ax, fig, tablica_x, tablica_y, dane_b):
-#     sonda_tekst = None
-#     sonda_punkt = None
-
-#     def onclick(event):
-#         nonlocal sonda_tekst, sonda_punkt
-        
-#         if event.inaxes != ax: 
-#             return 
-            
-#         cx, cy = event.xdata, event.ydata
-#         if cx is None or cy is None: 
-#             return
-
-#         ix = (np.abs(tablica_x - cx)).argmin()
-#         iy = (np.abs(tablica_y - cy)).argmin()
-#         b_wartosc = dane_b[iy, ix]
-
-#         if sonda_tekst: sonda_tekst.remove()
-#         if sonda_punkt: sonda_punkt.remove()
-
-#         sonda_punkt, = ax.plot(cx, cy, 'bo', markersize=6)
-        
-#         sonda_tekst = ax.annotate(
-#             f'|B|: {b_wartosc:.2e} T\n(x: {cx:.2f}, y: {cy:.2f})', 
-#             (cx, cy), xytext=(10, 10), textcoords='offset points',
-#             bbox=dict(boxstyle="round,pad=0.5", fc="white", ec="black", alpha=0.9),
-#             arrowprops=dict(arrowstyle="->", connectionstyle="arc3")
-#         )
-#         fig.canvas.draw()
-
-#     return onclick
 
 def generate_dipoles(center, ang, n, rad, m_mod):
     
@@ -119,36 +85,3 @@ def solve(m_arr, field_density, vector_size, field_size, streamplot_Z):
 
     data_pack = Field_data(x,y,z,X,Y,Z,Bx_c,By_c,Bz_c, m_arr)
     return data_pack
-    # B_mod = np.sqrt(np.square(Bx_c)+np.square(By_c)+np.square(Bz_c))
-
-    # B_flat = B_mod.flatten()
-    # norm = mcolors.Normalize(vmin=B_flat.min(), vmax=B_flat.max()/10)
-    # cmap = cm.RdPu
-    # vector_colors = cmap(norm(B_flat))
-
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(121, projection='3d')
-
-    # ax1.quiver3D(X, Y, Z, Bx_c, By_c, Bz_c, length=vector_size, normalize=True, colors=vector_colors)
-    # for i in range(len(m_arr)):
-    #     ax1.quiver3D(m_arr[i][0], m_arr[i][1], m_arr[i][2], m_arr[i][3], m_arr[i][4], m_arr[i][5], length=vector_size*2, normalize=True, color='red')
-
-    # plt.tight_layout(pad=0)
-    # z_index = (np.abs(z - streamplot_Z)).argmin() 
-
-    # Bx_2d = Bx_c[:, :, z_index]
-    # By_2d = By_c[:, :, z_index]
-    # B_mod_2d = B_mod[:, :, z_index]
-
-    # ax2 = fig.add_subplot(1,2,2)
-    # ax2.set_aspect('equal')
-    # strm = ax2.streamplot(x, y, Bx_2d, By_2d, color=np.log10(B_mod_2d), cmap=cm.RdPu, linewidth=1.5, density=1.5)
-    
-    # for m in m_arr:
-    #     ax2.plot(m[0], m[1], 'ro', markersize=5)
-
-    # obsluga = stworz_obsluge_sondy(ax2, fig, x, y, B_mod_2d)
-    # fig.canvas.mpl_connect('button_press_event', obsluga)
-
-    # plt.tight_layout()
-    # plt.show()
