@@ -8,12 +8,12 @@
 </p>
 
 <p align="center">
-  <img src="img\Readme_plot_1.png" width="300" alt="Alt text">
-  <img src="img\Readme_plot_2.png" width="300" alt="Alt text">
+  <img src="img\Readme_plot_1.png" width="500" alt="Alt text">
+  <img src="img\Readme_plot_2.png" width="500" alt="Alt text">
 </p>
 <p align="center">
-  <img src="img\Readme_plot_3.png" width="300" alt="Alt text">
-  <img src="img\Readme_plot_4.png" width="300" alt="Alt text">
+  <img src="img\Readme_plot_3.png" width="500" alt="Alt text">
+  <img src="img\Readme_plot_4.png" width="500" alt="Alt text">
 </p>
  
 ---
@@ -78,7 +78,8 @@ $$B_y = \frac{\mu_0}{4\pi}\,\frac{1}{r^3}\left(\frac{3m_x r_x r_y}{r^2} + \frac{
 $$B_z = \frac{\mu_0}{4\pi}\,\frac{1}{r^3}\left(\frac{3m_x r_x r_z}{r^2} + \frac{3m_y r_y r_z}{r^2} + \frac{3m_z r_z^2}{r^2} - m_z\right)$$
 
 where ( $\vec{r_1}$ is point in space, $\vec{r_2}$ is position of dipole):
-$$\vec{r} =\begin{bmatrix} r_x \\ r_y \\ r_z \end{bmatrix}= \vec{r}_1 - \vec{r}_2= \begin{bmatrix} r_{1x} - r_{2x} \\ r_{1y} - r_{2y} \\ r_{1z} - r_{2z} \end{bmatrix},\qquad r = \sqrt{r_x^2+r_y^2+r_z^2}$$
+
+$$\vec{r} = \begin{bmatrix} r_x \cr r_y \cr r_z \end{bmatrix} = \vec{r}_1 - \vec{r}_2 = \begin{bmatrix} r_{1x} - r_{2x} \cr r_{1y} - r_{2y} \cr r_{1z} - r_{2z} \end{bmatrix}, \qquad r = \sqrt{r_x^2+r_y^2+r_z^2}$$
 
 The total field at any point is the **vector sum (superposition)** of the contributions from every dipole in `m_arr`.
 
