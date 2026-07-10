@@ -136,3 +136,7 @@ This is a simplified model, and the author is aware of its main limitation:
 * **Flux and probe readings are limited** by the chosen grid resolution (nearest-neighbor lookup, not true interpolation/integration).
 
 ## 4. License
+
+Licensed under the MIT License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
