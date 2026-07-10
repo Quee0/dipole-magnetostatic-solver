@@ -8,12 +8,12 @@
 </p>
 
 <p align="center">
-  <img src="img\Readme_plot_1.png" width="500" alt="Alt text">
-  <img src="img\Readme_plot_2.png" width="500" alt="Alt text">
+  <img src="img\Readme_plot_1.png" width="450" alt="Alt text">
+  <img src="img\Readme_plot_2.png" width="450" alt="Alt text">
 </p>
 <p align="center">
-  <img src="img\Readme_plot_3.png" width="500" alt="Alt text">
-  <img src="img\Readme_plot_4.png" width="500" alt="Alt text">
+  <img src="img\Readme_plot_3.png" width="450" alt="Alt text">
+  <img src="img\Readme_plot_4.png" width="450" alt="Alt text">
 </p>
  
 ---
